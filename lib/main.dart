@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:main/app/GUI/app.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
-import 'package:main/ui/app.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() => runApp( const 
@@ -18,7 +18,7 @@ class MainApp extends StatelessWidget {
     return const ShadApp.material(
       debugShowCheckedModeBanner: false,
       title: 'ShadCN UI Demo',
-      home: App(),
+      home: AppEntryPoint(),
     );
   }
 }
