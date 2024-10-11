@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:main/app/controllers/controller.gallery.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class PageUpload extends StatelessWidget {
+class PageUpload extends ConsumerWidget {
   
   const PageUpload({super.key});  
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    
+    final formState = ref.watch(formProvider); // Escucha los cambios en el estado del formulario
+
     return SingleChildScrollView(
     child: Column(
       children: [
@@ -21,9 +26,12 @@ class PageUpload extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 ShadButton(
-                  onPressed: () {}, child: const Text("Upload image")),
-                ShadButton(
-                  onPressed: () {}, child: const Text("Upload audio")),
+                  onPressed: () async {
+                    await ref.read(formProvider.notifier).uploadImage();
+                  },
+
+                  child: const Text("Upload image"),                 
+                ),
               ],
             ),
           )),
@@ -39,14 +47,35 @@ class PageUpload extends StatelessWidget {
                 const SizedBox(height: 20),
                 const Text("Title cat", style: TextStyle(fontSize: 18)),
                 const SizedBox(height: 10),
-                const ShadInput(placeholder: Text("You title cat")),
+                ShadInput(placeholder: const Text("You title cat"),
+                  initialValue: formState['title'],
+                  onChanged: (value) async{
+                    await ref.read(formProvider.notifier).addTitle(value);
+                  },
+                ),
                 const SizedBox(height: 10),
                 const Text("Description cat", style: TextStyle(fontSize: 18)),
                 const SizedBox(height: 10),
-                const ShadInput(placeholder: Text("Here description cat")),
+                ShadInput(placeholder: const Text("Here description cat"),
+                  initialValue: formState['description'], 
+                  onChanged: (value) async {
+                    await ref.read(formProvider.notifier).addDescription(value);
+                  },
+                ),
                 const SizedBox(height: 20),
                 ShadButton(
-                  onPressed: () {}, child: const Text("Upload form"))
+                  onPressed: () async {
+                    ShadToaster.of(context).show(
+                      ShadToast(
+                        description: await ref.read(formProvider.notifier).submit() ? const Text("Datos enviados") : const Text("Error al enviar datos"),
+                        action: ShadButton.destructive(
+                          child: const Text("Cerrar"),
+                          onPressed: () => ShadToaster.of(context).hide(),
+                        ),
+                      ),
+                    );
+
+                  }, child: const Text("Upload form"))
 
               ],
             ),

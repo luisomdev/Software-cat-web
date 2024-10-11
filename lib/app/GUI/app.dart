@@ -20,7 +20,7 @@ class AppEntryPoint extends ConsumerWidget {
       appBar: const LayoutMenu(heightBar: 60),
       body: IndexedStack(
         index: currentIndex,
-        children:  [PageIndex(), const PageGallery(), const PageUpload(),],
+        children:  [PageIndex(), PageGallery(), const PageUpload(),],
       ),
       bottomNavigationBar: Container(padding: const EdgeInsets.all(20), child: const LayoutNavigationBottom()),
     );

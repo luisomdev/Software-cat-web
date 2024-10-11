@@ -1,84 +1,85 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:main/app/controllers/controller.view.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
-class PageGallery extends StatelessWidget {
-  const PageGallery({super.key});
+class PageGallery extends ConsumerWidget {
+  PageGallery({super.key});
+  final indexManagerProvider = StateProvider<int>((ref) => 0);
 
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-    child: Column(
-      children: [
-        Container(
-            alignment: Alignment.center,
-            padding: const EdgeInsets.all(20),
-            child: const ShadCard(
-              width: 500,
-              title: Text('{Name cat random}'),
-              description: Text('Description cat random'),
-            )),
-        Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(20),
-          child: ShadCard(
-            width: 500,
-            child: SvgPicture.asset('assets/img/imagen2.svg', width: 400,),
-          ),
-        ),
+  Widget build(BuildContext context, WidgetRef ref) {
 
-        Container(
-          padding: const EdgeInsets.all(20),
-          child: ShadCard(
-            width: 500,
-              child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ShadButton.outline(
-                  child: const Icon(Icons.play_circle,),
-                  onPressed: () {},
-                ),
-                ShadTooltip(
-                  builder: (context) => const Text('2:30'),
-                  child: const ShadSlider(
-                  
-                    initialValue: 33,
-                    max: 100),
+    final data = ref.watch(dataProvider);
+    final currentIndex = ref.watch(indexManagerProvider);
 
+    return data.when(
+      data: (data) {
+        if(data.isEmpty){
+          return const Center(child: Text("No data"));
+        }
+        return SingleChildScrollView(
+          child: Column(
+            children: [
+              Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.all(20),
+                  child: ShadCard(
+                    width: 500,
+                    title: Text(data[currentIndex]['title']),
+                    description: Text(data[currentIndex]['description']),
+                  )),
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(20),
+                child: ShadCard(
+                  width: 500,
+                  child: CachedNetworkImage(
+                    width: 300,
+                    fit: BoxFit.cover,
+                    imageUrl: data[currentIndex]['img'] as String,
+                    placeholder: (context, url) => const CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                  )
                 ),
-                const Text('2:30'),
+              ),
+              Container(
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(20),
+                child: ShadCard(
+                  width: 500,
+                  child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ShadButton(
+                        child: const Text('Back'),
+                        onPressed: () {
+                          currentIndex > 0 ? ref.read(indexManagerProvider.notifier).state-- : null;
+                        },
+                      ),
+                      ShadButton(
+                        child: const Text('Next'),
+                        onPressed: () async {
+                          print("Has presionado, img: ${data[currentIndex]['img']}");
+                          currentIndex < data.length - 1 ? ref.read(indexManagerProvider.notifier).state++ : null;
+                        },
+                      ),
 
-              ]
-            ),
-          )
-        ), 
-        Container(
-          alignment: Alignment.center,
-          padding: const EdgeInsets.all(20),
-          child: ShadCard(
-            width: 500,
-            child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                ShadButton(
-                  child: const Text('Back'),
-                  onPressed: () {},
+                    ],
                 ),
-                              ShadButton(
-                  child: const Text('Random'),
-                  onPressed: () {},
-                ),
+                )
+              ),
+            ],
+          ));
 
-                ShadButton(
-                  child: const Text('Next'),
-                  onPressed: () {},
-                ),
-
-              ],
-          ),
-          )
-        ),
-      ],
-    ));
+      }, error: (Object error, StackTrace stackTrace) { 
+        return const Center(child: Text("Error en los datos"));
+      }, 
+      loading: () { 
+        return const Center(child: CircularProgressIndicator());
+       }
+    );
+    
   }
 }
